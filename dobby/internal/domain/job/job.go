@@ -81,3 +81,22 @@ func (j *ProcessingJob) MarkFailed(errorMessage string) error {
 	j.state = JobStateFailed
 	return nil
 }
+
+// Reconstitute rebuilds a ProcessingJob from persisted data (used by repositories only).
+func Reconstitute(
+	id JobId,
+	ruleId rule.RuleId,
+	fileEvent FileEvent,
+	state JobState,
+	ctx *ProcessingContext,
+	result *ProcessingResult,
+) *ProcessingJob {
+	return &ProcessingJob{
+		id:        id,
+		ruleId:    ruleId,
+		fileEvent: fileEvent,
+		state:     state,
+		context:   ctx,
+		result:    result,
+	}
+}

@@ -6,7 +6,15 @@
       "Bash(go env *)",
       "Bash(go get *)",
       "Bash(go test *)",
-      "Bash(go build *)"
+      "Bash(go build *)",
+      "Bash(npm install *)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" --version)",
+      "Bash(\"/c/Program Files/nodejs/node.exe\" --version)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/asdfg/scoop/shims//**)",
+      "Bash(powershell.exe *)",
+      "Bash(rm -rf /c/Users/asdfg/Workspace/Dobby-Files/dobby/internal/api)",
+      "Bash(rm -rf /c/Users/asdfg/Workspace/Dobby-Files/dobby/frontend)"
     ]
   }
 }

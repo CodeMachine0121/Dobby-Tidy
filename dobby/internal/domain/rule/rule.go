@@ -81,3 +81,32 @@ func (r *Rule) Disable() error {
 	r.updatedAt = time.Now()
 	return nil
 }
+
+// Reconstitute rebuilds a Rule from persisted data (used by repositories only).
+func Reconstitute(
+	id RuleId,
+	name string,
+	enabled bool,
+	watchConfig WatchConfig,
+	filterSpec FilterSpec,
+	nameTemplate NamingTemplate,
+	targetTemplate TargetPathTemplate,
+	project string,
+	typeLabel string,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *Rule {
+	return &Rule{
+		id:             id,
+		name:           name,
+		enabled:        enabled,
+		watchConfig:    watchConfig,
+		filterSpec:     filterSpec,
+		nameTemplate:   nameTemplate,
+		targetTemplate: targetTemplate,
+		project:        project,
+		typeLabel:      typeLabel,
+		createdAt:      createdAt,
+		updatedAt:      updatedAt,
+	}
+}
