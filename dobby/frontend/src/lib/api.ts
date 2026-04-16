@@ -8,8 +8,10 @@ import {
   ListRecentLogs,
   ListLogsByRule,
   GetTodayCount,
+  GetLicenseInfo,
+  ActivateLicense,
 } from '../../wailsjs/go/main/App'
-import type { CreateRuleRequest, LogDTO, RuleDTO } from '../types'
+import type { CreateRuleRequest, LicenseInfo, LogDTO, RuleDTO } from '../types'
 
 export const api = {
   rules: {
@@ -25,5 +27,9 @@ export const api = {
     byRule: (ruleId: string, limit: number): Promise<LogDTO[]> =>
       ListLogsByRule(ruleId, limit),
     todayCount: (): Promise<number> => GetTodayCount(),
+  },
+  license: {
+    info: (): Promise<LicenseInfo> => GetLicenseInfo() as Promise<LicenseInfo>,
+    activate: (key: string): Promise<void> => ActivateLicense(key),
   },
 }

@@ -1,5 +1,8 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, ListChecks, ScrollText, Settings } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { NavLink, Outlet, Link } from 'react-router-dom'
+import { LayoutDashboard, ListChecks, ScrollText, Settings, ShieldAlert } from 'lucide-react'
+import { api } from '../lib/api'
+import type { LicenseInfo } from '../types'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: '儀表板' },
@@ -9,6 +12,14 @@ const navItems = [
 ]
 
 export function Layout() {
+  const [license, setLicense] = useState<LicenseInfo | null>(null)
+
+  useEffect(() => {
+    api.license.info().then(setLicense).catch(() => null)
+  }, [])
+
+  const showBanner = license?.status === 'expired'
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Sidebar */}
@@ -54,8 +65,24 @@ export function Layout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-surface">
-        <Outlet />
+      <main className="flex-1 overflow-auto bg-surface flex flex-col">
+        {showBanner && (
+          <div className="flex items-center gap-3 px-5 py-2.5 bg-destructive/10 border-b border-destructive/20 flex-shrink-0">
+            <ShieldAlert size={15} className="text-destructive flex-shrink-0" />
+            <p className="text-xs text-destructive flex-1">
+              <span className="font-semibold">試用期已結束</span> — 背景自動處理已暫停。
+            </p>
+            <Link
+              to="/settings"
+              className="text-xs font-medium text-destructive underline underline-offset-2 hover:opacity-70 transition-opacity flex-shrink-0"
+            >
+              輸入 License Key →
+            </Link>
+          </div>
+        )}
+        <div className="flex-1 overflow-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

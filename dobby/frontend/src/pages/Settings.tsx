@@ -1,4 +1,149 @@
-import { Info } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Info, Key, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react'
+import { api } from '../lib/api'
+import type { LicenseInfo } from '../types'
+
+// ── License Card ────────────────────────────────────────────────────────────────
+
+function LicenseCard() {
+  const [info, setInfo] = useState<LicenseInfo | null>(null)
+  const [key, setKey] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    api.license.info().then(setInfo).catch(() => null)
+  }, [])
+
+  async function handleActivate(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setSuccess(false)
+    setSubmitting(true)
+    try {
+      await api.license.activate(key.trim())
+      const updated = await api.license.info()
+      setInfo(updated)
+      setSuccess(true)
+      setKey('')
+    } catch (err: any) {
+      setError(err?.message ?? '啟用失敗，請確認 License Key 是否正確。')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (!info) return null
+
+  return (
+    <div className="card divide-y divide-border mt-4">
+      <div className="px-5 py-4 flex items-center gap-2">
+        <Key size={14} className="text-primary" />
+        <h2 className="text-sm font-semibold text-slate-900">授權狀態</h2>
+      </div>
+
+      {/* Status badge */}
+      <div className="px-5 py-4">
+        {info.status === 'activated' && (
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 size={18} className="text-success flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-slate-800">已啟用（正式版）</p>
+              <p className="text-xs text-slate-400 mt-0.5">感謝購買 Dobby，所有功能永久解鎖。</p>
+            </div>
+          </div>
+        )}
+
+        {info.status === 'active' && (
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle size={18} className="text-amber-500 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-slate-800">
+                試用中 — 還剩 <span className="text-primary font-semibold">{info.daysRemaining}</span> 天
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                試用到期後背景處理功能將暫停，請輸入 License Key 繼續使用。
+              </p>
+            </div>
+          </div>
+        )}
+
+        {info.status === 'expired' && (
+          <div className="flex items-center gap-2.5">
+            <ShieldAlert size={18} className="text-destructive flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-slate-800">試用已到期</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                背景處理已停止。請購買並輸入 License Key 以恢復全功能。
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Key input — only shown when not yet activated */}
+      {info.status !== 'activated' && (
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-xs font-medium text-slate-500">輸入 License Key</p>
+
+          {success && (
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-success/10 border border-success/20">
+              <CheckCircle2 size={14} className="text-success" />
+              <span className="text-xs text-success font-medium">啟用成功！所有功能已解鎖。</span>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
+              <ShieldAlert size={14} className="text-destructive" />
+              <span className="text-xs text-destructive">{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleActivate} className="flex gap-2">
+            <input
+              type="text"
+              value={key}
+              onChange={e => setKey(e.target.value.toUpperCase())}
+              placeholder="DOBBY-XXXX-XXXX-XXXX"
+              className="flex-1 px-3 py-2 text-sm font-mono rounded-lg border border-border
+                         bg-white text-slate-800 placeholder:text-slate-300
+                         focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
+                         disabled:opacity-50"
+              disabled={submitting}
+              spellCheck={false}
+              autoComplete="off"
+            />
+            <button
+              type="submit"
+              disabled={submitting || key.trim() === ''}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg
+                         hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed
+                         transition-colors duration-150"
+            >
+              {submitting ? '驗證中…' : '啟用'}
+            </button>
+          </form>
+
+          <p className="text-xs text-slate-400">
+            尚未購買？
+            <a
+              href="https://gumroad.com/l/dobby"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline ml-1"
+            >
+              前往 Gumroad 購買 $9.99 USD →
+            </a>
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Settings Page ────────────────────────────────────────────────────────────────
 
 export function Settings() {
   return (
@@ -29,6 +174,8 @@ export function Settings() {
           </label>
         </div>
       </div>
+
+      <LicenseCard />
 
       {/* About section */}
       <div className="card divide-y divide-border mt-4">

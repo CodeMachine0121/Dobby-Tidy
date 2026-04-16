@@ -36,3 +36,8 @@ export interface LogDTO {
   errorMessage: string
   processedAt: string
 }
+
+export interface LicenseInfo {
+  status: 'active' | 'expired' | 'activated'
+  daysRemaining: number
+}
