@@ -6,6 +6,7 @@ import (
 	"github.com/dobby/filemanager/internal/application"
 	"github.com/dobby/filemanager/internal/domain/rule"
 	"github.com/dobby/filemanager/internal/query"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App is the Wails binding thin shell.
@@ -24,6 +25,16 @@ func NewApp(ruleSvc *application.RuleService, logSvc *application.LogService) *A
 // startup is called by Wails when the application starts.
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+}
+
+// ── Dialogs ───────────────────────────────────────────────────────────────────
+
+// SelectFolder opens the OS folder-picker dialog and returns the chosen path.
+// Returns an empty string if the user cancels.
+func (a *App) SelectFolder() (string, error) {
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "選擇資料夾",
+	})
 }
 
 // ── Rules ──────────────────────────────────────────────────────────────────────

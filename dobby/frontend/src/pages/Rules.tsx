@@ -3,6 +3,7 @@ import {
   Plus, ToggleLeft, ToggleRight, Trash2, FolderOpen,
   ChevronDown, X, AlertCircle
 } from 'lucide-react'
+import { SelectFolder } from '../../wailsjs/go/main/App'
 import { api } from '../lib/api'
 import type { CreateRuleRequest, RuleDTO } from '../types'
 
@@ -135,7 +136,14 @@ function RuleModal({
             <label className="label">監控資料夾 <span className="text-destructive">*</span></label>
             <div className="relative">
               <input className="input pr-10" placeholder="C:/Users/me/Downloads" value={form.watchFolder} onChange={(e) => set('watchFolder', e.target.value)} />
-              <FolderOpen size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                onClick={async () => { const p = await SelectFolder(); if (p) set('watchFolder', p) }}
+                title="選擇資料夾"
+              >
+                <FolderOpen size={15} />
+              </button>
             </div>
             <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
               <input type="checkbox" className="w-4 h-4 rounded text-primary accent-primary" checked={form.recursive} onChange={(e) => set('recursive', e.target.checked)} />
@@ -189,7 +197,14 @@ function RuleModal({
             <label className="label">目標資料夾</label>
             <div className="relative">
               <input className="input pr-10" placeholder="C:/Users/me/Projects/{project}/assets" value={form.targetTemplate} onChange={(e) => set('targetTemplate', e.target.value)} />
-              <FolderOpen size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                onClick={async () => { const p = await SelectFolder(); if (p) set('targetTemplate', p) }}
+                title="選擇資料夾"
+              >
+                <FolderOpen size={15} />
+              </button>
             </div>
             <p className="text-xs text-slate-400 mt-1">支援 {'{project}'} 等動態變數；資料夾不存在時自動建立</p>
           </div>

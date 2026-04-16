@@ -10,6 +10,7 @@ import (
 
 var ErrDuplicateWatchFolder = errors.New("watch folder is already monitored by another rule")
 var ErrRuleNotFound = errors.New("rule not found")
+var ErrTargetSameAsWatch = errors.New("target folder must not be the same as watch folder")
 
 // CreateRuleCmd is the input for creating a new rule.
 type CreateRuleCmd struct {
@@ -35,6 +36,10 @@ func NewRuleService(repo rule.IRuleRepository) *RuleService {
 
 // CreateRule validates uniqueness, builds the aggregate, and persists it.
 func (s *RuleService) CreateRule(ctx context.Context, cmd CreateRuleCmd) (*rule.Rule, error) {
+	if cmd.TargetTemplate != "" && cmd.TargetTemplate == cmd.WatchFolder {
+		return nil, ErrTargetSameAsWatch
+	}
+
 	exists, err := s.repo.ExistsByFolderPath(ctx, cmd.WatchFolder)
 	if err != nil {
 		return nil, fmt.Errorf("rule_service.CreateRule check: %w", err)
