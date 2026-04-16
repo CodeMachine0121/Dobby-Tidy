@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"log"
+	"time"
 
 	"github.com/dobby/filemanager/internal/application"
 	"github.com/dobby/filemanager/internal/domain/rule"
@@ -9,22 +11,48 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+const scanInterval = 30 * time.Second
+
 // App is the Wails binding thin shell.
 // It receives calls from the frontend and delegates entirely to the application layer.
 // No business logic lives here.
 type App struct {
-	ctx     context.Context
-	ruleSvc *application.RuleService
-	logSvc  *application.LogService
+	ctx          context.Context
+	ruleSvc      *application.RuleService
+	logSvc       *application.LogService
+	processorSvc *application.BackgroundProcessorService
 }
 
-func NewApp(ruleSvc *application.RuleService, logSvc *application.LogService) *App {
-	return &App{ruleSvc: ruleSvc, logSvc: logSvc}
+func NewApp(
+	ruleSvc *application.RuleService,
+	logSvc *application.LogService,
+	processorSvc *application.BackgroundProcessorService,
+) *App {
+	return &App{ruleSvc: ruleSvc, logSvc: logSvc, processorSvc: processorSvc}
 }
 
 // startup is called by Wails when the application starts.
+// It begins the background scan loop which runs every scanInterval until the app closes.
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	go func() {
+		// Run an initial scan immediately on startup.
+		if err := a.processorSvc.ScanAndProcess(ctx); err != nil {
+			log.Printf("background processor: initial scan error: %v", err)
+		}
+		ticker := time.NewTicker(scanInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := a.processorSvc.ScanAndProcess(ctx); err != nil {
+					log.Printf("background processor: scan error: %v", err)
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 }
 
 // ── Dialogs ───────────────────────────────────────────────────────────────────

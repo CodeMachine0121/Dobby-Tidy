@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"github.com/dobby/filemanager/internal/application"
+	"github.com/dobby/filemanager/internal/infrastructure/filesystem"
 	"github.com/dobby/filemanager/internal/infrastructure/persistence"
 )
 
@@ -41,14 +42,22 @@ func main() {
 
 	// ── Repositories ─────────────────────────────────────────────────────────
 	ruleRepo := persistence.NewSQLiteRuleRepository(db)
+	jobRepo := persistence.NewSQLiteProcessingJobRepository(db)
 	logRepo := persistence.NewSQLiteOperationLogRepository(db)
 
 	// ── Application services ─────────────────────────────────────────────────
 	ruleSvc := application.NewRuleService(ruleRepo)
 	logSvc := application.NewLogService(logRepo)
+	processorSvc := application.NewBackgroundProcessorService(
+		ruleRepo,
+		jobRepo,
+		logRepo,
+		filesystem.NewOSFileSystem(),
+		logRepo,
+	)
 
 	// ── Wails app ─────────────────────────────────────────────────────────────
-	app := NewApp(ruleSvc, logSvc)
+	app := NewApp(ruleSvc, logSvc, processorSvc)
 
 	if err := wails.Run(&options.App{
 		Title:     "Dobby — 檔案管家",

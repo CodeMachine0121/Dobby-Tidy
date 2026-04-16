@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/dobby/filemanager/internal/domain/rule"
 )
@@ -51,7 +52,7 @@ func (s *RuleService) CreateRule(ctx context.Context, cmd CreateRuleCmd) (*rule.
 	r := rule.NewRule(
 		cmd.Name,
 		rule.WatchConfig{FolderPath: cmd.WatchFolder, Recursive: cmd.Recursive},
-		rule.FilterSpec{Extensions: cmd.FilterExts, Keyword: cmd.FilterKeyword},
+		rule.FilterSpec{Extensions: normalizeExtensions(cmd.FilterExts), Keyword: cmd.FilterKeyword},
 		rule.NamingTemplate{TemplateString: cmd.NameTemplate},
 		rule.TargetPathTemplate{PathTemplate: cmd.TargetTemplate},
 		cmd.Project,
@@ -100,6 +101,23 @@ func (s *RuleService) GetRule(ctx context.Context, id string) (*rule.Rule, error
 // ListRules returns all rules.
 func (s *RuleService) ListRules(ctx context.Context) ([]*rule.Rule, error) {
 	return s.repo.ListAll(ctx)
+}
+
+// normalizeExtensions ensures every extension starts with a dot (e.g. "pdf" → ".pdf").
+// The frontend strips leading dots for display purposes, so we re-add them here.
+func normalizeExtensions(exts []string) []string {
+	result := make([]string, 0, len(exts))
+	for _, e := range exts {
+		e = strings.TrimSpace(e)
+		if e == "" {
+			continue
+		}
+		if !strings.HasPrefix(e, ".") {
+			e = "." + e
+		}
+		result = append(result, e)
+	}
+	return result
 }
 
 func (s *RuleService) findOrErr(ctx context.Context, id string) (*rule.Rule, error) {
