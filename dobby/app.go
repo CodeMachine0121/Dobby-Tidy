@@ -21,20 +21,25 @@ type App struct {
 	ruleSvc      *application.RuleService
 	logSvc       *application.LogService
 	processorSvc *application.BackgroundProcessorService
+	licenseSvc   *application.LicenseService
 }
 
 func NewApp(
 	ruleSvc *application.RuleService,
 	logSvc *application.LogService,
 	processorSvc *application.BackgroundProcessorService,
+	licenseSvc *application.LicenseService,
 ) *App {
-	return &App{ruleSvc: ruleSvc, logSvc: logSvc, processorSvc: processorSvc}
+	return &App{ruleSvc: ruleSvc, logSvc: logSvc, processorSvc: processorSvc, licenseSvc: licenseSvc}
 }
 
 // startup is called by Wails when the application starts.
-// It begins the background scan loop which runs every scanInterval until the app closes.
+// It initializes the trial period (if first launch) then begins the background scan loop.
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	if err := a.licenseSvc.InitializeTrial(ctx); err != nil {
+		log.Printf("license: trial init error: %v", err)
+	}
 	go func() {
 		// Run an initial scan immediately on startup.
 		if err := a.processorSvc.ScanAndProcess(ctx); err != nil {
@@ -121,6 +126,18 @@ func (a *App) EnableRule(id string) error {
 // DisableRule deactivates a rule.
 func (a *App) DisableRule(id string) error {
 	return a.ruleSvc.DisableRule(a.ctx, id)
+}
+
+// ── License ─────────────────────────────────────────────────────────────────────
+
+// GetLicenseInfo returns the current license status and remaining trial days.
+func (a *App) GetLicenseInfo() (*application.LicenseInfo, error) {
+	return a.licenseSvc.GetLicenseInfo(a.ctx)
+}
+
+// ActivateLicense validates and activates the given license key.
+func (a *App) ActivateLicense(key string) error {
+	return a.licenseSvc.ActivateLicense(a.ctx, key)
 }
 
 // ── Operation Logs ─────────────────────────────────────────────────────────────

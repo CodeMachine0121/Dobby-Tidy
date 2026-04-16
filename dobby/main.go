@@ -13,6 +13,7 @@ import (
 
 	"github.com/dobby/filemanager/internal/application"
 	"github.com/dobby/filemanager/internal/infrastructure/filesystem"
+	infralicense "github.com/dobby/filemanager/internal/infrastructure/license"
 	"github.com/dobby/filemanager/internal/infrastructure/persistence"
 )
 
@@ -56,8 +57,14 @@ func main() {
 		logRepo,
 	)
 
+	// ── License service ───────────────────────────────────────────────────────
+	licenseRepo := infralicense.NewLocalLicenseRepository(dataDir)
+	machineId := infralicense.NewMachineIdProvider()
+	licenseSvc := application.NewLicenseService(licenseRepo, machineId)
+	processorSvc.SetLicenseGuard(licenseSvc)
+
 	// ── Wails app ─────────────────────────────────────────────────────────────
-	app := NewApp(ruleSvc, logSvc, processorSvc)
+	app := NewApp(ruleSvc, logSvc, processorSvc, licenseSvc)
 
 	if err := wails.Run(&options.App{
 		Title:     "Dobby — 檔案管家",

@@ -43,6 +43,13 @@ type IOperationLogWriter interface {
 	Save(ctx context.Context, log *query.OperationLog) error
 }
 
+// ILicenseGuard is the port that allows BackgroundProcessorService to check whether
+// the current license permits running. Injected via SetLicenseGuard to keep the
+// existing constructor and tests unchanged.
+type ILicenseGuard interface {
+	CanRunBackgroundProcessor(ctx context.Context) (bool, error)
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // BackgroundProcessorService
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,14 +57,15 @@ type IOperationLogWriter interface {
 // BackgroundProcessorService scans watched folders and processes files that
 // match enabled rules. Callers are responsible for scheduling (e.g. a ticker).
 type BackgroundProcessorService struct {
-	ruleRepo  rule.IRuleRepository
-	jobRepo   job.IProcessingJobRepository
-	logWriter IOperationLogWriter
-	fs        IFileSystem
-	matcher   *domainservice.RuleMatcher
-	renderer  *domainservice.TemplateRenderer
-	seqGen    *domainservice.SequenceGenerator
-	running   atomic.Bool
+	ruleRepo     rule.IRuleRepository
+	jobRepo      job.IProcessingJobRepository
+	logWriter    IOperationLogWriter
+	fs           IFileSystem
+	matcher      *domainservice.RuleMatcher
+	renderer     *domainservice.TemplateRenderer
+	seqGen       *domainservice.SequenceGenerator
+	licenseGuard ILicenseGuard // optional; nil = always allowed (backward-compat)
+	running      atomic.Bool
 }
 
 // NewBackgroundProcessorService wires up the service with its dependencies.
@@ -79,6 +87,11 @@ func NewBackgroundProcessorService(
 	}
 }
 
+// SetLicenseGuard attaches a license guard that is checked before each scan.
+func (s *BackgroundProcessorService) SetLicenseGuard(guard ILicenseGuard) {
+	s.licenseGuard = guard
+}
+
 // ForceRunning marks the service as already running. Used in tests only.
 func (s *BackgroundProcessorService) ForceRunning() {
 	s.running.Store(true)
@@ -86,8 +99,15 @@ func (s *BackgroundProcessorService) ForceRunning() {
 
 // ScanAndProcess scans all enabled rules' watch folders and processes any
 // files that satisfy their filter specs. If a scan is already in progress the
-// call returns immediately without error (S-6).
+// call returns immediately without error (S-6). When a license guard is set,
+// an expired or missing license also skips the scan (monetization S-4).
 func (s *BackgroundProcessorService) ScanAndProcess(ctx context.Context) error {
+	if s.licenseGuard != nil {
+		canRun, err := s.licenseGuard.CanRunBackgroundProcessor(ctx)
+		if err != nil || !canRun {
+			return nil
+		}
+	}
 	if !s.running.CompareAndSwap(false, true) {
 		return nil
 	}
