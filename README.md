@@ -12,6 +12,12 @@ Dobby watches folders you choose, applies your custom rules, and moves incoming 
 
 At a glance: how many files were processed today, how many rules are running, and a live feed of recent file activity.
 
+### Before & After
+
+![Running Result](images/running%20result.png)
+
+Left: a folder full of unsorted files. Right: the same folder after Dobby runs — files automatically renamed and moved into the right subfolders, with nothing left for you to do.
+
 ---
 
 ## Features
@@ -74,11 +80,32 @@ Every file operation is recorded. Filter by rule to quickly audit what happened,
 
 ![Settings](images/settings.png)
 
-| Setting | Description |
-|---------|-------------|
-| **Interface Language** | Switch the UI language |
-| **Desktop Notifications** | Toggle system notifications on file processing |
-| **License** | Enter your license key to activate the full version |
+The Settings page is divided into four sections. Here's what each field does:
+
+### Language
+
+| Field | Description |
+|-------|-------------|
+| **Interface Language** | Switches the display language for the entire app. Currently supports **Traditional Chinese** and **English**. The change takes effect immediately — no restart needed. |
+
+### Notifications
+
+| Field | Description |
+|-------|-------------|
+| **Desktop Notifications** | When turned on, Dobby sends a system notification each time a file is processed. Turn it off if you prefer to check the Activity Log manually instead. |
+
+### License
+
+| Field | Description |
+|-------|-------------|
+| **Status** | Shows the current state of your copy: **Activated** (full access), **Trial** (shows days remaining), or **Expired** (background processing is paused until a key is entered). |
+| **License Key** | The key you received after purchase. Paste it here and click **Activate** to unlock the full version. Format: `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX`. |
+
+> Don't have a key yet? Dobby is **$9.99 USD** — one-time purchase, no subscription. [Buy here.](https://afternoonjames.gumroad.com/l/dobby-tidy)
+
+### About
+
+Displays the app name and current version number. No editable fields.
 
 ---
 
