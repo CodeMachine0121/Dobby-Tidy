@@ -1,10 +1,110 @@
 # Dobby — File Manager
 
-A desktop application that automatically renames and moves incoming files to designated folders based on user-defined rules.
+**Automatically rename and organize your files the moment they appear — no manual work required.**
+
+Dobby watches folders you choose, applies your custom rules, and moves incoming files to the right place with the right name. Set it up once, let it run forever.
 
 ---
 
-## Tech Stack
+## Overview
+
+![Dashboard](images/dashboard.png)
+
+At a glance: how many files were processed today, how many rules are running, and a live feed of recent file activity.
+
+---
+
+## Features
+
+- **Rule-based automation** — Define exactly which files to watch, how to name them, and where to move them
+- **Flexible name templates** — Use variables like `{project}`, `{type}`, `{YYYY}{MM}{DD}`, `{seq}` to generate consistent, meaningful filenames
+- **Filter by extension or keyword** — Target only the files you care about (e.g. `.png`, `.pdf`, or filenames containing a specific word)
+- **Activity log** — Every processed file is recorded with its original path, new path, applied rule, and timestamp
+- **Desktop notifications** — Get notified the moment a file is processed
+- **Runs silently in the background** — No interaction needed after setup
+
+---
+
+## Rules
+
+![Rules](images/rules.png)
+
+The Rules page lists all your automation rules. Each rule shows its name, watch folder, and current status. You can toggle a rule on/off or delete it at any time.
+
+### Creating a Rule
+
+![New Rule](images/new%20rules.png)
+
+Click **+ Add Rule** to open the rule editor. Configure:
+
+| Field | Description |
+|-------|-------------|
+| **Rule Name** | A label to identify this rule (e.g. `Design Files`) |
+| **Watch Folder** | The folder Dobby monitors for new files |
+| **File Extensions** | Filter by type — leave empty to match all files |
+| **Keyword Filter** | Only process files whose name contains this word |
+| **Project Name / Type Label** | Custom values injected into the filename template |
+| **Name Template** | The output filename pattern using `{variables}` |
+
+**Available template variables:**
+
+| Variable | Meaning |
+|----------|---------|
+| `{project}` | Your project name |
+| `{type}` | Your type label |
+| `{YYYY}` | 4-digit year |
+| `{MM}` | 2-digit month |
+| `{DD}` | 2-digit day |
+| `{seq}` | Auto-incrementing sequence number |
+| `{original}` | Original filename (without extension) |
+
+**Example:** A rule with template `{project}-{type}-{YYYY}{MM}{DD}-{seq}.{ext}` applied to a file dropped into the watch folder produces `my-project-screenshot-20260418-001.png`.
+
+---
+
+## Activity Logs
+
+![Activity Logs](images/activity%20logs.png)
+
+Every file operation is recorded. Filter by rule to quickly audit what happened, with the exact original path, output path, rule that matched, and timestamp.
+
+---
+
+## Settings
+
+![Settings](images/settings.png)
+
+| Setting | Description |
+|---------|-------------|
+| **Interface Language** | Switch the UI language |
+| **Desktop Notifications** | Toggle system notifications on file processing |
+| **License** | Enter your license key to activate the full version |
+
+---
+
+## Pricing
+
+Dobby is available for **$9.99 USD** — one-time purchase, no subscription.
+
+A free trial is included (14 days). After the trial, background processing pauses until a license key is activated.
+
+---
+
+## Getting Started
+
+1. Download and install Dobby
+2. Open the app and go to **Rules**
+3. Click **+ Add Rule** and configure your first rule
+4. Drop a file into your watched folder — Dobby handles the rest
+
+---
+
+## For Developers
+
+<details>
+<summary>Tech stack, local development, and project structure</summary>
+
+### Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -12,214 +112,76 @@ A desktop application that automatically renames and moves incoming files to des
 | Backend Language | Go 1.21+ |
 | Architecture Pattern | Tactical DDD (Aggregate, Repository, Domain Service) |
 | Database | SQLite via `modernc.org/sqlite` (pure Go, no CGO required) |
-| Frontend | React + Vite (TypeScript) — to be implemented |
-| File Watching | Go `fsnotify` (to be implemented) |
+| Frontend | React + Vite (TypeScript) |
 
----
-
-## Prerequisites
-
-### Required
+### Prerequisites
 
 | Tool | Version | Installation |
 |------|---------|--------------|
 | Go | 1.21+ | https://go.dev/dl/ |
 | Wails CLI | v2.x | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` |
 | Node.js | 18+ | https://nodejs.org |
-| npm | 9+ | Bundled with Node.js |
 
-### Windows Additional Requirements
+**Windows:** WebView2 Runtime is built into Windows 11. Windows 10 users can download it from the [Microsoft website](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
 
-- **WebView2 Runtime**: Built into Windows 11; Windows 10 users can download it from the [Microsoft website](https://developer.microsoft.com/en-us/microsoft-edge/webview2/).
-- **Build Tools**: Run `wails doctor` to verify your environment is complete.
+**macOS:** Run `xcode-select --install`.
 
-### macOS Additional Requirements
-
-- Xcode Command Line Tools: `xcode-select --install`
-
----
-
-## Local Development
-
-### 1. Clone the Repository
+### Local Development
 
 ```bash
 git clone <repo-url>
-cd Dobby-Files
-```
-
-### 2. Install Go Dependencies
-
-```bash
-cd dobby
+cd Dobby-Files/dobby
 go mod download
-```
-
-### 3. Verify Environment
-
-```bash
-wails doctor
-```
-
-All items should show ✅. If anything is missing, follow the output instructions to install the corresponding tools.
-
-### 4. Build the Frontend
-
-> Currently `frontend/dist/` only contains a placeholder.  
-> If the frontend is not yet implemented, you can skip this step — backend logic can still be developed and tested normally.
-
-Once the frontend is ready, run from `dobby/`:
-
-```bash
-cd frontend
-npm install
-npm run build   # outputs to frontend/dist/
-```
-
-### 5. Start Development Mode
-
-```bash
-cd dobby
 wails dev
 ```
 
-Wails will:
-- Compile the Go backend
-- Start the frontend Vite dev server (hot reload)
-- Open a native window loading the frontend via WebView
-- Auto-generate `frontend/src/wailsjs/` TypeScript bindings
-
-If the frontend is not yet built and you only want to run backend logic (CLI mode), run directly:
-
-```bash
-go run .
-```
-
-> Note: `go run .` will attempt to open a Wails window and requires WebView2 Runtime. For pure backend testing, use unit tests (see below).
-
----
-
-## Running Tests
-
-### Unit Tests (No External Dependencies)
+### Running Tests
 
 ```bash
 cd dobby
 go test ./...
 ```
 
-Expected output:
-
-```
-ok  github.com/dobby/filemanager/internal/domain/job      (29 tests)
-ok  github.com/dobby/filemanager/internal/domain/rule
-ok  github.com/dobby/filemanager/internal/domain/service
-```
-
-### Specific Packages
-
-```bash
-go test ./internal/domain/...         # all domain tests
-go test ./internal/domain/rule/... -v # verbose output
-```
-
----
-
-## Building for Production
+### Build for Production
 
 ```bash
 cd dobby
 wails build
+# Output: dobby/build/bin/dobby.exe (Windows) or dobby/build/bin/dobby (macOS)
 ```
 
-Output location: `dobby/build/bin/dobby` (`dobby.exe` on Windows)
-
----
-
-## Database Location
-
-The SQLite database is **automatically created on first launch**, located at:
+### Database Location
 
 | Platform | Path |
 |----------|------|
 | Windows | `%USERPROFILE%\.dobby\dobby.db` |
 | macOS / Linux | `~/.dobby/dobby.db` |
 
-Schema migrations are **code-first**, automatically applied at startup by `internal/infrastructure/persistence/db.go` — no manual SQL execution required.
+Schema migrations are applied automatically at startup — no manual SQL required.
 
----
-
-## Project Structure
+### Project Structure
 
 ```
 Dobby-Files/
-├── dobby/                              # Go project root
-│   ├── main.go                         # Wails entry point, DI assembly
-│   ├── app.go                          # Wails binding thin shell (delegates to application layer)
-│   ├── wails.json                      # Wails project configuration
-│   ├── frontend/
-│   │   └── dist/                       # Compiled frontend (generated by npm run build)
+├── dobby/
+│   ├── main.go                    # Wails entry point, DI assembly
+│   ├── app.go                     # Wails binding shell
 │   └── internal/
 │       ├── domain/
-│       │   ├── rule/                   # Rule aggregate, value objects, repository interface
-│       │   ├── job/                    # ProcessingJob state machine
-│       │   └── service/               # RuleMatcher, TemplateRenderer, SequenceGenerator
+│       │   ├── rule/              # Rule aggregate, value objects
+│       │   ├── job/               # ProcessingJob state machine
+│       │   └── service/           # RuleMatcher, TemplateRenderer, SequenceGenerator
 │       ├── application/
-│       │   ├── rule_service.go         # Rule CRUD use cases
-│       │   └── log_service.go          # Operation log read use cases
+│       │   ├── rule_service.go    # Rule CRUD use cases
+│       │   └── log_service.go     # Operation log use cases
 │       ├── infrastructure/
-│       │   └── persistence/           # SQLite repositories + code-first migrations
+│       │   └── persistence/       # SQLite repositories + migrations
 │       └── query/
-│           └── operation_log_query.go  # Operation log read model
+│           └── operation_log_query.go
 ├── features/
-│   └── file-manager.feature           # Gherkin behavior spec (21 scenarios)
+│   └── file-manager.feature       # Gherkin behavior spec
 └── docs/
     └── features/file-manager/
-        ├── architecture.md            # Architecture design document
-        └── conclusion.md             # SDD verification report
 ```
 
-### Dependency Direction
-
-```
-frontend  (React)
-    ↓  Wails JS binding (auto-generated)
-app.go    (thin shell)
-    ↓
-application/
-    ↓
-domain/  ←──  infrastructure/
-              (implements domain interfaces)
-query/   ←──  infrastructure/persistence/
-              (shared db connection)
-```
-
-**Rule: outer layers depend on inner layers; inner layers have no knowledge of outer layers.**
-
----
-
-## Development Workflow
-
-### Adding a Rule Use Case
-
-1. Define or modify the domain model in `internal/domain/rule/`
-2. Add the use case method in `internal/application/rule_service.go`
-3. Add the corresponding Wails binding method in `app.go`
-4. Call `window.go.main.App.<MethodName>()` from the frontend (Wails auto-generates TypeScript bindings)
-
-### Adding a Database Column
-
-Append a new DDL statement to the end of the `migrations` slice in `internal/infrastructure/persistence/db.go` (do not modify existing entries) — it will be automatically applied on the next startup.
-
----
-
-## FAQ
-
-**Q: `wails doctor` shows WebView2 is not installed**  
-A: Windows 10 users can download the Evergreen Bootstrapper from [this link](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) and install it.
-
-**Q: `go build` errors with `modernc.org/sqlite` not found**  
-A: Run `go mod download` to re-download dependencies.
-
-**Q: I want to inspect the database directly**  
-A: Use any SQLite GUI tool (e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)) to open `~/.dobby/dobby.db`.
+</details>
