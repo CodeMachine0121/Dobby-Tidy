@@ -15,5 +15,5 @@ const (
 const TrialDays = 14
 
 var ErrAlreadyActivated = errors.New("license is already activated")
-var ErrInvalidLicenseKeyFormat = errors.New("invalid license key format")
-var ErrInvalidLicenseKey = errors.New("invalid license key")
+var ErrInvalidLicenseKey = errors.New("無效的 license key")
+var ErrLicenseAlreadyUsed = errors.New("此 key 已在另一台機器上使用")

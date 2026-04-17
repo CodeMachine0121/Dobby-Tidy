@@ -8,6 +8,11 @@ import (
 	"github.com/dobby/filemanager/internal/domain/license"
 )
 
+// IGumroadVerifier verifies a Gumroad license key against the Gumroad API.
+type IGumroadVerifier interface {
+	Verify(ctx context.Context, licenseKey string) error
+}
+
 // IMachineIdProvider abstracts the platform-specific machine identifier.
 type IMachineIdProvider interface {
 	MachineID() (string, error)
@@ -22,14 +27,14 @@ type LicenseInfo struct {
 // LicenseService orchestrates trial initialization, status queries, and license activation.
 type LicenseService struct {
 	repo      license.ILicenseRepository
-	validator *license.LicenseKeyValidator
+	verifier  IGumroadVerifier
 	machineId IMachineIdProvider
 }
 
-func NewLicenseService(repo license.ILicenseRepository, machineId IMachineIdProvider) *LicenseService {
+func NewLicenseService(repo license.ILicenseRepository, machineId IMachineIdProvider, verifier IGumroadVerifier) *LicenseService {
 	return &LicenseService{
 		repo:      repo,
-		validator: license.NewLicenseKeyValidator(),
+		verifier:  verifier,
 		machineId: machineId,
 	}
 }
@@ -62,17 +67,20 @@ func (s *LicenseService) GetLicenseInfo(ctx context.Context) (*LicenseInfo, erro
 	}, nil
 }
 
-// ActivateLicense validates the given key and, if valid, activates the license for this machine.
+// ActivateLicense verifies the key via Gumroad API and, if valid, activates the license for this machine.
 func (s *LicenseService) ActivateLicense(ctx context.Context, key string) error {
-	key = strings.ToUpper(strings.TrimSpace(key))
-	if err := s.validator.Validate(key); err != nil {
-		return err
-	}
-	machineID, err := s.machineId.MachineID()
+	key = strings.TrimSpace(key)
+	l, _, err := s.repo.Load(ctx)
 	if err != nil {
 		return err
 	}
-	l, _, err := s.repo.Load(ctx)
+	if l != nil && l.IsActivated() {
+		return license.ErrAlreadyActivated
+	}
+	if err := s.verifier.Verify(ctx, key); err != nil {
+		return err
+	}
+	machineID, err := s.machineId.MachineID()
 	if err != nil {
 		return err
 	}

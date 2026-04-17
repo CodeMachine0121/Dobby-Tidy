@@ -10,7 +10,8 @@
       "Bash(go vet *)",
       "Bash(go run *)",
       "Read(//tmp/**)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "WebSearch"
     ]
   }
 }

@@ -60,7 +60,8 @@ func main() {
 	// ── License service ───────────────────────────────────────────────────────
 	licenseRepo := infralicense.NewLocalLicenseRepository(dataDir)
 	machineId := infralicense.NewMachineIdProvider()
-	licenseSvc := application.NewLicenseService(licenseRepo, machineId)
+	gumroadVerifier := infralicense.NewProductionGumroadVerifier()
+	licenseSvc := application.NewLicenseService(licenseRepo, machineId, gumroadVerifier)
 	processorSvc.SetLicenseGuard(licenseSvc)
 
 	// ── Wails app ─────────────────────────────────────────────────────────────
