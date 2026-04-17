@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle, XCircle, ArrowRight, RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { api } from '../lib/api'
 import type { LogDTO, RuleDTO } from '../types'
 
@@ -15,6 +16,7 @@ function shortPath(p: string) {
 }
 
 export function Logs() {
+  const { t } = useTranslation()
   const [logs, setLogs] = useState<LogDTO[]>([])
   const [rules, setRules] = useState<RuleDTO[]>([])
   const [selectedRule, setSelectedRule] = useState<string>('')
@@ -56,11 +58,14 @@ export function Logs() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">操作紀錄</h1>
+          <h1 className="text-xl font-semibold text-slate-900">{t('logs.title')}</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {logs.length} 筆紀錄・
-            <span className="text-success">{successCount} 成功</span>
-            {errorCount > 0 && <span className="text-destructive ml-1">{errorCount} 失敗</span>}
+            {t('logs.subtitle', { total: logs.length, success: successCount })}
+            {errorCount > 0 && (
+              <span className="text-destructive ml-1">
+                {t('logs.subtitleWithError', { error: errorCount })}
+              </span>
+            )}
           </p>
         </div>
         <button
@@ -70,19 +75,19 @@ export function Logs() {
           className="btn-secondary"
         >
           <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-          重新整理
+          {t('logs.refresh')}
         </button>
       </div>
 
       {/* Filter bar */}
       <div className="flex items-center gap-3 mb-4">
-        <label className="text-sm text-slate-600 font-medium flex-shrink-0">依規則篩選</label>
+        <label className="text-sm text-slate-600 font-medium flex-shrink-0">{t('logs.filterByRule')}</label>
         <select
           className="input max-w-xs"
           value={selectedRule}
           onChange={(e) => handleRuleFilter(e.target.value)}
         >
-          <option value="">全部規則</option>
+          <option value="">{t('logs.allRules')}</option>
           {rules.map((r) => (
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
@@ -98,7 +103,7 @@ export function Logs() {
         ) : logs.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-sm text-slate-400">
-              {selectedRule ? '此規則尚無操作紀錄' : '尚無操作紀錄'}
+              {selectedRule ? t('logs.noLogsForRule') : t('logs.noLogs')}
             </p>
           </div>
         ) : (
@@ -107,11 +112,11 @@ export function Logs() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left px-4 py-3 font-medium text-slate-500 w-6"></th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">原始檔案</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t('logs.col.original')}</th>
                   <th className="text-left px-3 py-3 font-medium text-slate-500 w-6"></th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">新路徑</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">規則</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">時間</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t('logs.col.newPath')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t('logs.col.rule')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t('logs.col.time')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

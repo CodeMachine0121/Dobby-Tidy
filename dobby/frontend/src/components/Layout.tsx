@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import { LayoutDashboard, ListChecks, ScrollText, Settings, ShieldAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { api } from '../lib/api'
 import type { LicenseInfo } from '../types'
 
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: '儀表板' },
-  { to: '/rules', icon: ListChecks, label: '規則管理' },
-  { to: '/logs', icon: ScrollText, label: '操作紀錄' },
-  { to: '/settings', icon: Settings, label: '設定' },
-]
-
 export function Layout() {
+  const { t } = useTranslation()
   const [license, setLicense] = useState<LicenseInfo | null>(null)
 
   useEffect(() => {
     api.license.info().then(setLicense).catch(() => null)
   }, [])
+
+  const navItems = [
+    { to: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
+    { to: '/rules', icon: ListChecks, label: t('nav.rules') },
+    { to: '/logs', icon: ScrollText, label: t('nav.logs') },
+    { to: '/settings', icon: Settings, label: t('nav.settings') },
+  ]
 
   const showBanner = license?.status === 'expired'
 
@@ -70,13 +72,13 @@ export function Layout() {
           <div className="flex items-center gap-3 px-5 py-2.5 bg-destructive/10 border-b border-destructive/20 flex-shrink-0">
             <ShieldAlert size={15} className="text-destructive flex-shrink-0" />
             <p className="text-xs text-destructive flex-1">
-              <span className="font-semibold">試用期已結束</span> — 背景自動處理已暫停。
+              <span className="font-semibold">{t('nav.trialExpired')}</span> — {t('nav.trialExpiredDesc')}
             </p>
             <Link
               to="/settings"
               className="text-xs font-medium text-destructive underline underline-offset-2 hover:opacity-70 transition-opacity flex-shrink-0"
             >
-              輸入 License Key →
+              {t('nav.enterLicenseKey')}
             </Link>
           </div>
         )}

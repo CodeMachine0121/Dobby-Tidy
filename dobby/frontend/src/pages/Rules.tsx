@@ -3,6 +3,7 @@ import {
   Plus, ToggleLeft, ToggleRight, Trash2, FolderOpen,
   ChevronDown, X, AlertCircle
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { SelectFolder } from '../../wailsjs/go/main/App'
 import { api } from '../lib/api'
 import type { CreateRuleRequest, RuleDTO } from '../types'
@@ -21,6 +22,7 @@ const DEFAULT_FORM: CreateRuleRequest = {
 }
 
 function ExtInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const { t } = useTranslation()
   const [inputVal, setInputVal] = useState('')
 
   function add() {
@@ -55,7 +57,7 @@ function ExtInput({ value, onChange }: { value: string[]; onChange: (v: string[]
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
         />
         <button type="button" onClick={add} className="btn-secondary px-3">
-          新增
+          {t('rules.add')}
         </button>
       </div>
     </div>
@@ -71,6 +73,7 @@ function RuleModal({
   onClose: () => void
   onSave: (req: CreateRuleRequest) => Promise<void>
 }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState<CreateRuleRequest>(DEFAULT_FORM)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -86,9 +89,9 @@ function RuleModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.name.trim()) return setError('請填寫規則名稱')
-    if (!form.watchFolder.trim()) return setError('請填寫監控資料夾路徑')
-    if (!form.nameTemplate.trim()) return setError('請填寫命名樣版')
+    if (!form.name.trim()) return setError(t('rules.error.nameRequired'))
+    if (!form.watchFolder.trim()) return setError(t('rules.error.folderRequired'))
+    if (!form.nameTemplate.trim()) return setError(t('rules.error.templateRequired'))
     setSaving(true)
     setError('')
     try {
@@ -112,7 +115,7 @@ function RuleModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Modal header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
-          <h2 className="text-base font-semibold text-slate-900">新增規則</h2>
+          <h2 className="text-base font-semibold text-slate-900">{t('rules.modal.title')}</h2>
           <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
             <X size={16} className="text-slate-500" />
           </button>
@@ -128,53 +131,53 @@ function RuleModal({
           )}
 
           <div>
-            <label className="label">規則名稱 <span className="text-destructive">*</span></label>
-            <input className="input" placeholder="例：設計稿整理" value={form.name} onChange={(e) => set('name', e.target.value)} />
+            <label className="label">{t('rules.modal.name')} <span className="text-destructive">*</span></label>
+            <input className="input" placeholder={t('rules.modal.namePlaceholder')} value={form.name} onChange={(e) => set('name', e.target.value)} />
           </div>
 
           <div>
-            <label className="label">監控資料夾 <span className="text-destructive">*</span></label>
+            <label className="label">{t('rules.modal.watchFolder')} <span className="text-destructive">*</span></label>
             <div className="relative">
               <input className="input pr-10" placeholder="C:/Users/me/Downloads" value={form.watchFolder} onChange={(e) => set('watchFolder', e.target.value)} />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                 onClick={async () => { const p = await SelectFolder(); if (p) set('watchFolder', p) }}
-                title="選擇資料夾"
+                title={t('rules.modal.watchFolder')}
               >
                 <FolderOpen size={15} />
               </button>
             </div>
             <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
               <input type="checkbox" className="w-4 h-4 rounded text-primary accent-primary" checked={form.recursive} onChange={(e) => set('recursive', e.target.checked)} />
-              <span className="text-sm text-slate-600">遞迴監控子資料夾</span>
+              <span className="text-sm text-slate-600">{t('rules.modal.recursive')}</span>
             </label>
           </div>
 
           <div>
-            <label className="label">副檔名篩選</label>
+            <label className="label">{t('rules.modal.filterExts')}</label>
             <ExtInput value={form.filterExts} onChange={(v) => set('filterExts', v)} />
-            <p className="text-xs text-slate-400 mt-1">留空代表處理所有檔案</p>
+            <p className="text-xs text-slate-400 mt-1">{t('rules.modal.filterExtsHint')}</p>
           </div>
 
           <div>
-            <label className="label">關鍵字篩選</label>
-            <input className="input" placeholder="檔名包含的關鍵字（選填）" value={form.filterKeyword} onChange={(e) => set('filterKeyword', e.target.value)} />
+            <label className="label">{t('rules.modal.filterKeyword')}</label>
+            <input className="input" placeholder={t('rules.modal.filterKeywordPlaceholder')} value={form.filterKeyword} onChange={(e) => set('filterKeyword', e.target.value)} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">專案名稱</label>
+              <label className="label">{t('rules.modal.project')}</label>
               <input className="input" placeholder="my-project" value={form.project} onChange={(e) => set('project', e.target.value)} />
             </div>
             <div>
-              <label className="label">類型標籤</label>
+              <label className="label">{t('rules.modal.typeLabel')}</label>
               <input className="input" placeholder="screenshot" value={form.typeLabel} onChange={(e) => set('typeLabel', e.target.value)} />
             </div>
           </div>
 
           <div>
-            <label className="label">命名樣版 <span className="text-destructive">*</span></label>
+            <label className="label">{t('rules.modal.nameTemplate')} <span className="text-destructive">*</span></label>
             <input className="input font-mono text-xs" value={form.nameTemplate} onChange={(e) => set('nameTemplate', e.target.value)} />
             <div className="flex flex-wrap gap-1.5 mt-2">
               {TEMPLATE_VARS.map((v) => (
@@ -189,30 +192,30 @@ function RuleModal({
               ))}
             </div>
             <p className="text-xs text-slate-400 mt-1.5">
-              預覽：<span className="font-mono text-slate-600">{form.nameTemplate || '—'}</span>
+              {t('rules.modal.nameTemplatePreview')}<span className="font-mono text-slate-600">{form.nameTemplate || '—'}</span>
             </p>
           </div>
 
           <div>
-            <label className="label">目標資料夾</label>
+            <label className="label">{t('rules.modal.targetFolder')}</label>
             <div className="relative">
               <input className="input pr-10" placeholder="C:/Users/me/Projects/{project}/assets" value={form.targetTemplate} onChange={(e) => set('targetTemplate', e.target.value)} />
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                 onClick={async () => { const p = await SelectFolder(); if (p) set('targetTemplate', p) }}
-                title="選擇資料夾"
+                title={t('rules.modal.targetFolder')}
               >
                 <FolderOpen size={15} />
               </button>
             </div>
-            <p className="text-xs text-slate-400 mt-1">支援 {'{project}'} 等動態變數；資料夾不存在時自動建立</p>
+            <p className="text-xs text-slate-400 mt-1">{t('rules.modal.targetFolderHint')}</p>
           </div>
         </form>
 
         {/* Modal footer */}
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border flex-shrink-0">
-          <button type="button" onClick={onClose} className="btn-secondary">取消</button>
+          <button type="button" onClick={onClose} className="btn-secondary">{t('rules.modal.cancel')}</button>
           <button
             type="button"
             onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
@@ -222,9 +225,9 @@ function RuleModal({
             {saving ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                儲存中...
+                {t('rules.modal.saving')}
               </>
-            ) : '建立規則'}
+            ) : t('rules.modal.create')}
           </button>
         </div>
       </div>
@@ -237,6 +240,7 @@ function RuleCard({ rule, onToggle, onDelete }: {
   onToggle: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -257,7 +261,7 @@ function RuleCard({ rule, onToggle, onDelete }: {
             type="button"
             onClick={onToggle}
             className="p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
-            title={rule.enabled ? '停用' : '啟用'}
+            title={rule.enabled ? t('rules.card.disable') : t('rules.card.enable')}
           >
             {rule.enabled
               ? <ToggleRight size={18} className="text-primary" />
@@ -267,15 +271,15 @@ function RuleCard({ rule, onToggle, onDelete }: {
 
           {confirmDelete ? (
             <div className="flex items-center gap-1">
-              <button type="button" onClick={() => setConfirmDelete(false)} className="btn-secondary text-xs px-2 py-1">取消</button>
-              <button type="button" onClick={onDelete} className="btn-danger text-xs px-2 py-1">確認刪除</button>
+              <button type="button" onClick={() => setConfirmDelete(false)} className="btn-secondary text-xs px-2 py-1">{t('rules.card.cancelDelete')}</button>
+              <button type="button" onClick={onDelete} className="btn-danger text-xs px-2 py-1">{t('rules.card.confirmDelete')}</button>
             </div>
           ) : (
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
               className="p-2 rounded-lg hover:bg-destructive-light transition-colors cursor-pointer"
-              title="刪除規則"
+              title={t('rules.card.delete')}
             >
               <Trash2 size={15} className="text-slate-400 hover:text-destructive" />
             </button>
@@ -296,32 +300,32 @@ function RuleCard({ rule, onToggle, onDelete }: {
         <div className="px-5 pb-4 border-t border-border pt-4 space-y-3">
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
             <div>
-              <span className="text-slate-400">命名樣版</span>
+              <span className="text-slate-400">{t('rules.card.nameTemplate')}</span>
               <p className="font-mono text-slate-700 mt-0.5">{rule.nameTemplate || '—'}</p>
             </div>
             <div>
-              <span className="text-slate-400">目標資料夾</span>
+              <span className="text-slate-400">{t('rules.card.targetFolder')}</span>
               <p className="font-mono text-slate-700 mt-0.5">{rule.targetTemplate || '—'}</p>
             </div>
             <div>
-              <span className="text-slate-400">副檔名篩選</span>
+              <span className="text-slate-400">{t('rules.card.filterExts')}</span>
               <p className="text-slate-700 mt-0.5">
-                {rule.filterExts.length > 0 ? rule.filterExts.map((e) => `.${e}`).join(', ') : '全部'}
+                {rule.filterExts.length > 0 ? rule.filterExts.map((e) => `.${e}`).join(', ') : t('rules.card.filterExtsAll')}
               </p>
             </div>
             <div>
-              <span className="text-slate-400">關鍵字篩選</span>
+              <span className="text-slate-400">{t('rules.card.filterKeyword')}</span>
               <p className="text-slate-700 mt-0.5">{rule.filterKeyword || '—'}</p>
             </div>
             {rule.project && (
               <div>
-                <span className="text-slate-400">專案</span>
+                <span className="text-slate-400">{t('rules.card.project')}</span>
                 <p className="text-slate-700 mt-0.5">{rule.project}</p>
               </div>
             )}
             {rule.typeLabel && (
               <div>
-                <span className="text-slate-400">類型標籤</span>
+                <span className="text-slate-400">{t('rules.card.typeLabel')}</span>
                 <p className="text-slate-700 mt-0.5">{rule.typeLabel}</p>
               </div>
             )}
@@ -333,6 +337,7 @@ function RuleCard({ rule, onToggle, onDelete }: {
 }
 
 export function Rules() {
+  const { t } = useTranslation()
   const [rules, setRules] = useState<RuleDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -367,14 +372,14 @@ export function Rules() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">規則管理</h1>
+          <h1 className="text-xl font-semibold text-slate-900">{t('rules.title')}</h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            {rules.length} 條規則，{rules.filter((r) => r.enabled).length} 條啟用中
+            {t('rules.subtitle', { total: rules.length, active: rules.filter((r) => r.enabled).length })}
           </p>
         </div>
         <button type="button" onClick={() => setModalOpen(true)} className="btn-primary">
           <Plus size={15} />
-          新增規則
+          {t('rules.addRule')}
         </button>
       </div>
 
@@ -388,11 +393,11 @@ export function Rules() {
           <div className="w-12 h-12 rounded-2xl bg-primary-light flex items-center justify-center mx-auto mb-3">
             <Plus size={22} className="text-primary" />
           </div>
-          <p className="text-sm font-medium text-slate-700">尚未設定任何規則</p>
-          <p className="text-xs text-slate-400 mt-1">建立第一條規則，開始自動整理您的檔案</p>
+          <p className="text-sm font-medium text-slate-700">{t('rules.noRules')}</p>
+          <p className="text-xs text-slate-400 mt-1">{t('rules.noRulesHint')}</p>
           <button type="button" onClick={() => setModalOpen(true)} className="btn-primary mt-4 mx-auto">
             <Plus size={14} />
-            新增規則
+            {t('rules.addRule')}
           </button>
         </div>
       ) : (

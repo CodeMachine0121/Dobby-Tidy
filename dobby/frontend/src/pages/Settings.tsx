@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Info, Key, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 import { api } from '../lib/api'
 import type { LicenseInfo } from '../types'
 
 // ── License Card ────────────────────────────────────────────────────────────────
 
 function LicenseCard() {
+  const { t } = useTranslation()
   const [info, setInfo] = useState<LicenseInfo | null>(null)
   const [key, setKey] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -28,7 +31,7 @@ function LicenseCard() {
       setSuccess(true)
       setKey('')
     } catch (err: any) {
-      setError(err?.message ?? '啟用失敗，請確認 License Key 是否正確。')
+      setError(err?.message ?? t('license.defaultError'))
     } finally {
       setSubmitting(false)
     }
@@ -40,7 +43,7 @@ function LicenseCard() {
     <div className="card divide-y divide-border mt-4">
       <div className="px-5 py-4 flex items-center gap-2">
         <Key size={14} className="text-primary" />
-        <h2 className="text-sm font-semibold text-slate-900">授權狀態</h2>
+        <h2 className="text-sm font-semibold text-slate-900">{t('license.title')}</h2>
       </div>
 
       {/* Status badge */}
@@ -49,8 +52,8 @@ function LicenseCard() {
           <div className="flex items-center gap-2.5">
             <CheckCircle2 size={18} className="text-success flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-slate-800">已啟用（正式版）</p>
-              <p className="text-xs text-slate-400 mt-0.5">感謝購買 Dobby，所有功能永久解鎖。</p>
+              <p className="text-sm font-medium text-slate-800">{t('license.activated')}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{t('license.activatedDesc')}</p>
             </div>
           </div>
         )}
@@ -60,11 +63,9 @@ function LicenseCard() {
             <AlertTriangle size={18} className="text-amber-500 flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-slate-800">
-                試用中 — 還剩 <span className="text-primary font-semibold">{info.daysRemaining}</span> 天
+                {t('license.trial', { days: info.daysRemaining })}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                試用到期後背景處理功能將暫停，請輸入 License Key 繼續使用。
-              </p>
+              <p className="text-xs text-slate-400 mt-0.5">{t('license.trialDesc')}</p>
             </div>
           </div>
         )}
@@ -73,10 +74,8 @@ function LicenseCard() {
           <div className="flex items-center gap-2.5">
             <ShieldAlert size={18} className="text-destructive flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-slate-800">試用已到期</p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                背景處理已停止。請購買並輸入 License Key 以恢復全功能。
-              </p>
+              <p className="text-sm font-medium text-slate-800">{t('license.expired')}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{t('license.expiredDesc')}</p>
             </div>
           </div>
         )}
@@ -85,12 +84,12 @@ function LicenseCard() {
       {/* Key input — only shown when not yet activated */}
       {info.status !== 'activated' && (
         <div className="px-5 py-4 space-y-3">
-          <p className="text-xs font-medium text-slate-500">輸入 License Key</p>
+          <p className="text-xs font-medium text-slate-500">{t('license.enterKey')}</p>
 
           {success && (
             <div className="flex items-center gap-2 p-2.5 rounded-lg bg-success/10 border border-success/20">
               <CheckCircle2 size={14} className="text-success" />
-              <span className="text-xs text-success font-medium">啟用成功！所有功能已解鎖。</span>
+              <span className="text-xs text-success font-medium">{t('license.activateSuccess')}</span>
             </div>
           )}
 
@@ -122,19 +121,19 @@ function LicenseCard() {
                          hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed
                          transition-colors duration-150"
             >
-              {submitting ? '驗證中…' : '啟用'}
+              {submitting ? t('license.activating') : t('license.activate')}
             </button>
           </form>
 
           <p className="text-xs text-slate-400">
-            尚未購買？
+            {t('license.buyPrompt')}
             <a
-              href="https://gumroad.com/l/dobby"
+              href="https://afternoonjames.gumroad.com/l/dobby-tidy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline ml-1"
             >
-              前往 Gumroad 購買 $9.99 USD →
+              {t('license.buyLink')}
             </a>
           </p>
         </div>
@@ -146,22 +145,47 @@ function LicenseCard() {
 // ── Settings Page ────────────────────────────────────────────────────────────────
 
 export function Settings() {
+  const { t } = useTranslation()
+
+  function handleLanguageChange(lang: string) {
+    i18n.changeLanguage(lang)
+    localStorage.setItem('language', lang)
+  }
+
   return (
     <div className="p-6 max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900">設定</h1>
-        <p className="text-sm text-slate-500 mt-0.5">系統設定與偏好</p>
+        <h1 className="text-xl font-semibold text-slate-900">{t('settings.title')}</h1>
+        <p className="text-sm text-slate-500 mt-0.5">{t('settings.subtitle')}</p>
+      </div>
+
+      {/* Language section */}
+      <div className="card divide-y divide-border">
+        <div className="px-5 py-4">
+          <h2 className="text-sm font-semibold text-slate-900">{t('settings.language')}</h2>
+        </div>
+        <div className="px-5 py-4 flex items-center justify-between">
+          <p className="text-sm font-medium text-slate-800">{t('settings.interfaceLanguage')}</p>
+          <select
+            className="input max-w-[160px]"
+            value={i18n.language}
+            onChange={(e) => handleLanguageChange(e.target.value)}
+          >
+            <option value="zh-TW">繁體中文</option>
+            <option value="en">English</option>
+          </select>
+        </div>
       </div>
 
       {/* Notifications section */}
-      <div className="card divide-y divide-border">
+      <div className="card divide-y divide-border mt-4">
         <div className="px-5 py-4">
-          <h2 className="text-sm font-semibold text-slate-900">通知</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t('settings.notifications')}</h2>
         </div>
         <div className="px-5 py-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-800">桌面通知</p>
-            <p className="text-xs text-slate-400 mt-0.5">檔案被自動處理時發送系統通知</p>
+            <p className="text-sm font-medium text-slate-800">{t('settings.desktopNotifications')}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{t('settings.desktopNotificationsDesc')}</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -180,7 +204,7 @@ export function Settings() {
       {/* About section */}
       <div className="card divide-y divide-border mt-4">
         <div className="px-5 py-4">
-          <h2 className="text-sm font-semibold text-slate-900">關於</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t('settings.about')}</h2>
         </div>
         <div className="px-5 py-5">
           <div className="flex items-start gap-3">
@@ -191,10 +215,8 @@ export function Settings() {
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-900">Dobby File Manager</p>
-              <p className="text-xs text-slate-500 mt-0.5">版本 1.0.0</p>
-              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                自動監控資料夾、依規則重新命名並歸檔檔案的桌面工具。
-              </p>
+              <p className="text-xs text-slate-500 mt-0.5">{t('settings.version')} 1.0.0</p>
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">{t('settings.appDesc')}</p>
             </div>
           </div>
         </div>
@@ -204,28 +226,28 @@ export function Settings() {
       <div className="card mt-4">
         <div className="px-5 py-4 border-b border-border flex items-center gap-2">
           <Info size={14} className="text-primary" />
-          <h2 className="text-sm font-semibold text-slate-900">命名樣版變數參考</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t('settings.templateRef')}</h2>
         </div>
         <div className="px-5 py-4">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-slate-400 border-b border-border">
-                <th className="pb-2 font-medium">變數</th>
-                <th className="pb-2 font-medium">說明</th>
-                <th className="pb-2 font-medium">範例</th>
+                <th className="pb-2 font-medium">{t('settings.templateCol.var')}</th>
+                <th className="pb-2 font-medium">{t('settings.templateCol.desc')}</th>
+                <th className="pb-2 font-medium">{t('settings.templateCol.example')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {[
-                ['{project}', '專案名稱', 'my-app'],
-                ['{type}', '類型標籤', 'screenshot'],
-                ['{YYYY}', '西元年', '2026'],
-                ['{MM}', '月份', '04'],
-                ['{DD}', '日期', '16'],
-                ['{seq}', '當日序號', '001'],
-                ['{original}', '原始檔名', 'Untitled'],
-                ['{ext}', '副檔名', 'png'],
-              ].map(([variable, desc, example]) => (
+              {([
+                ['{project}', t('settings.templateVars.project'), 'my-app'],
+                ['{type}', t('settings.templateVars.type'), 'screenshot'],
+                ['{YYYY}', t('settings.templateVars.YYYY'), '2026'],
+                ['{MM}', t('settings.templateVars.MM'), '04'],
+                ['{DD}', t('settings.templateVars.DD'), '16'],
+                ['{seq}', t('settings.templateVars.seq'), '001'],
+                ['{original}', t('settings.templateVars.original'), 'Untitled'],
+                ['{ext}', t('settings.templateVars.ext'), 'png'],
+              ] as [string, string, string][]).map(([variable, desc, example]) => (
                 <tr key={variable} className="text-slate-600">
                   <td className="py-2 font-mono text-primary">{variable}</td>
                   <td className="py-2 text-slate-500">{desc}</td>

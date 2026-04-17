@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FileCheck, ListChecks, ArrowRight, CheckCircle, XCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { api } from '../lib/api'
 import type { LogDTO, RuleDTO } from '../types'
 
@@ -15,6 +16,7 @@ function formatTime(iso: string) {
 }
 
 export function Dashboard() {
+  const { t } = useTranslation()
   const [todayCount, setTodayCount] = useState<number>(0)
   const [ruleCount, setRuleCount] = useState<number>(0)
   const [logs, setLogs] = useState<LogDTO[]>([])
@@ -37,7 +39,7 @@ export function Dashboard() {
       <div className="flex items-center justify-center h-full">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">載入中...</p>
+          <p className="text-sm text-slate-500">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -47,8 +49,8 @@ export function Dashboard() {
     <div className="p-6 max-w-4xl">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900">儀表板</h1>
-        <p className="text-sm text-slate-500 mt-0.5">系統狀態與今日處理摘要</p>
+        <h1 className="text-xl font-semibold text-slate-900">{t('dashboard.title')}</h1>
+        <p className="text-sm text-slate-500 mt-0.5">{t('dashboard.subtitle')}</p>
       </div>
 
       {/* Stats */}
@@ -56,9 +58,9 @@ export function Dashboard() {
         <div className="card p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">今日處理</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t('dashboard.todayProcessed')}</p>
               <p className="text-3xl font-bold text-slate-900 mt-1">{todayCount}</p>
-              <p className="text-xs text-slate-400 mt-1">個檔案</p>
+              <p className="text-xs text-slate-400 mt-1">{t('dashboard.filesUnit')}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-accent-light flex items-center justify-center">
               <FileCheck size={20} className="text-accent" />
@@ -69,9 +71,9 @@ export function Dashboard() {
         <div className="card p-5">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">啟用規則</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{t('dashboard.activeRules')}</p>
               <p className="text-3xl font-bold text-slate-900 mt-1">{ruleCount}</p>
-              <p className="text-xs text-slate-400 mt-1">條規則運作中</p>
+              <p className="text-xs text-slate-400 mt-1">{t('dashboard.rulesUnit')}</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary-light flex items-center justify-center">
               <ListChecks size={20} className="text-primary" />
@@ -83,19 +85,19 @@ export function Dashboard() {
       {/* Recent logs */}
       <div className="card">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-slate-900">最近操作紀錄</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t('dashboard.recentLogs')}</h2>
           <Link
             to="/logs"
             className="flex items-center gap-1 text-xs text-primary hover:text-primary-hover transition-colors"
           >
-            查看全部 <ArrowRight size={12} />
+            {t('dashboard.viewAll')} <ArrowRight size={12} />
           </Link>
         </div>
 
         {logs.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-sm text-slate-400">尚無操作紀錄</p>
-            <p className="text-xs text-slate-300 mt-1">當規則觸發時，紀錄會顯示於此</p>
+            <p className="text-sm text-slate-400">{t('dashboard.noLogs')}</p>
+            <p className="text-xs text-slate-300 mt-1">{t('dashboard.noLogsHint')}</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
