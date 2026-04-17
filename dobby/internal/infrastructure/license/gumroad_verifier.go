@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/dobby/filemanager/internal/domain/license"
@@ -13,7 +16,7 @@ import (
 
 const (
 	gumroadVerifyURL = "https://api.gumroad.com/v2/licenses/verify"
-	gumroadProductID = "dobby-tidy"
+	gumroadProductID = "80RHP185znin74AyLPo3BA=="
 )
 
 type gumroadVerifyResponse struct {
@@ -56,8 +59,16 @@ func (v *GumroadVerifier) Verify(ctx context.Context, licenseKey string) error {
 	}
 	defer resp.Body.Close()
 
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("無法連線至驗證伺服器，請確認網路連線: %w", err)
+	}
+	log.Printf("[gumroad] status=%d body=%s", resp.StatusCode, string(bodyBytes))
+	_ = os.WriteFile(os.ExpandEnv(`$USERPROFILE\.dobby\gumroad_debug.txt`),
+		[]byte(fmt.Sprintf("status=%d\n%s\n", resp.StatusCode, bodyBytes)), 0o600)
+
 	var result gumroadVerifyResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.Unmarshal(bodyBytes, &result); err != nil {
 		return fmt.Errorf("無法連線至驗證伺服器，請確認網路連線: %w", err)
 	}
 
