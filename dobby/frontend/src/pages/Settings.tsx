@@ -31,7 +31,7 @@ function LicenseCard() {
       setSuccess(true)
       setKey('')
     } catch (err: any) {
-      setError(err?.message ?? t('license.defaultError'))
+      setError(typeof err === 'string' ? err : (err?.message ?? t('license.defaultError')))
     } finally {
       setSubmitting(false)
     }
@@ -104,8 +104,8 @@ function LicenseCard() {
             <input
               type="text"
               value={key}
-              onChange={e => setKey(e.target.value.toUpperCase())}
-              placeholder="DOBBY-XXXX-XXXX-XXXX"
+              onChange={e => setKey(e.target.value)}
+              placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX"
               className="flex-1 px-3 py-2 text-sm font-mono rounded-lg border border-border
                          bg-white text-slate-800 placeholder:text-slate-300
                          focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary
